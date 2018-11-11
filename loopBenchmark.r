@@ -1,4 +1,3 @@
-#Test on imbalanced graph
 source("improved_EE.r")
 source('EE.r')
 source('evaluation.r')
@@ -9,14 +8,16 @@ library("igraph")
 library("matlab")
 library('clime')
 
-thr<-0.23
+#thr<-0.08
 count<-1
 
+thrList<-c(0.05,0.075,0.1,0.125,0.15,0.175,0.2)
+#thrList<-c(0.2)
 
-data<-as.matrix(read.csv('data/balance_1000vars_20blks_2000samples.csv',header=FALSE))
-graph_structure<-as.matrix(read.csv('precision/balance_1000vars_20blks.csv',header=FALSE))
 
-print('finished reading')
+graph_structure<-as.matrix(read.csv(sprintf('precision/grid_3000vars_20blks.csv'),header=FALSE))
+data<-as.matrix(read.csv(sprintf('data/grid_3000vars_20blks_6000samples.csv'),header=FALSE))
+print(sprintf('Finished reading'))
 
 p=length(data[1,]) #Variable number
 n=length(data[,1]) #Sample number
@@ -27,17 +28,20 @@ for (col in 1:p) {
 S<-t(data)%*%(data)
 rm(data)
 S<-S/max(abs(S))
+print('Finished normalizing')
 
-print('finished normalizing')
-"
-p<-5000
-graph_structure<-as.matrix(read.csv('precision/balance_5000vars_20blks.csv',header=FALSE))
-S<-as.matrix(read.csv('cov/S_5000.csv',header=FALSE))
-print('finished reading')
-"
+for (thr in thrList){
+print(sprintf('----------------------------%f thr-----------------',thr))
+
 print('Improved EE:')
-
-print(system.time(imp_ee_model<-improvedEE(S,thr,p,core_num=1)))
+time<-proc.time()-proc.time()
+for(i in 1:count){
+     ptm<-proc.time()
+    imp_ee_model<-improvedEE(S,thr,p,core_num=1)
+     time<-time+(proc.time()-ptm)
+}
+time<-time/count
+print(time)
 var_seq<-imp_ee_model[[2]]
 imp_ee_model<-imp_ee_model[[1]]
 reorder_graph<-graph_structure[var_seq,]
@@ -45,7 +49,7 @@ reorder_graph<-reorder_graph[,var_seq]
 imp_ee_model<-imp_ee_model/max(abs(imp_ee_model))
 print(accuracy(reorder_graph,imp_ee_model))
 
-
+"
 print('EE:')
 time<-proc.time()-proc.time()
 for(i in 1:count){
@@ -72,6 +76,7 @@ glasso_model<-glasso_model[[2]]
 glasso_model<-glasso_model/max(abs(glasso_model))
 print(accuracy(graph_structure,glasso_model))
 
+
 print('QUIC:')
 time<-proc.time()-proc.time()
 for(i in 1:count){
@@ -84,3 +89,5 @@ print(time)
 quic_model<-quic_model[[1]]
 quic_model<-quic_model/max(abs(quic_model))
 print(accuracy(graph_structure,quic_model))
+"
+}

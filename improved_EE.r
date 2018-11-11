@@ -25,6 +25,7 @@ improvedEE<-function(S,lambda,p,thr_func=hardThreshold,core_num=1){
     num<-comps[[3]]
     bins<-comps[[1]]
     csize<-comps[[2]]
+    print(sprintf('%d components',num))
     #Permuting the matrix so that it is block diagonal
     var_seq<-zeros(p,2)
     var_seq[,1]<-1:p
