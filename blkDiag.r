@@ -1,5 +1,8 @@
+library('matlab')
+library('magic')
+library('MASS')
+
 sparseMatrix<-function(n,coef=1){
-    library('matlab')
     mat=eye(n)
     for (i in 1:n){
         j<-i+1
@@ -21,7 +24,6 @@ sparseMatrix<-function(n,coef=1){
 }
 
 circleMatrix<-function(n){
-    library('matlab')
     mat<-eye(n)
     for(i in 1:n){
         mat[i,(i+1)%%n]<-0.3
@@ -32,7 +34,6 @@ circleMatrix<-function(n){
 
 gridMatrix<-function(row,col){
     # row and col must be larger than 1
-    library('matlab')
     mat<-eye(row*col)
     for(i in 1:(row-1)){
         for(j in 1:col){
@@ -47,8 +48,6 @@ gridMatrix<-function(row,col){
 }
 
 balancedBlk<-function(p,blk=4,coef=1){
-    library('magic')
-    library('MASS')
     n<-p/blk
     #mat<-randMatrix(n)
     blk_list<-list()
@@ -60,7 +59,6 @@ balancedBlk<-function(p,blk=4,coef=1){
 }
 
 inbalancedBlk<-function(a,b,c,d){
-    library('magic')
     mat1<-sparseMatrix(a)
     mat2<-sparseMatrix(b)
     mat3<-sparseMatrix(c)
@@ -69,8 +67,6 @@ inbalancedBlk<-function(a,b,c,d){
 }
 
 circleGraph<-function(p,blk=4){
-    library('magic')
-    library('MASS')
     n<-p/blk
     blk_list<-list()
     for(i in 1:blk){
@@ -81,8 +77,6 @@ circleGraph<-function(p,blk=4){
 }
 
 gridGraph<-function(p,blk,row,col){
-    library('magic')
-    library('MASS')
     n<-p/blk
     blk_list<-list()
     for(i in 1:blk){
@@ -93,8 +87,6 @@ gridGraph<-function(p,blk,row,col){
 }
 
 generateSample<-function(Omega,size){
-    library('matlab')
-    library('MASS')
     samples<-mvrnorm(size,ones(1,length(Omega[1,])),solve(Omega))
     return (samples)
 }

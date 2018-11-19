@@ -1,20 +1,30 @@
-# The implementation of improved EE.
+# The implementation of split EE.
 # Pay attention that we haven't consider about storage cost of these functions. 
 #-------------------------------------------------------------------------------
 library("igraph")
 library('magic')
 library("matlab")
-
 library('foreach')
 library('doParallel')
-
 source('thresholding.r')
 
 
-
+splitAndInv<-function(blkMat){
+    #======= TODO: The dim of matrix might be too samll and there might be more partitions =============
+    dim<-length(blkMat[1,])
+    size<-dim/2
+    result<-zeros(dim)
+    offset<-1
+    partList<-c(blkMat[1:size,1:size],Matrix(blkMat[1:size,size+1:dim],sparse=TRUE),blkMat[size+1:dim,size+1:dim])
+    result[1:size,1:size]<-solve(partList[1]-partList[2]%*%solve(partList[3])%*%t(partList[2]))
+    result[size+1:dim,size+1:dim]<-solve(partList[3]-t(partList[2])%*%solve(partList[1])%*%partList[2])
+    result[1:size,size+1:dim]<-(-solve(partList[3])%*%t(partList[2])%*%result[1:size,1:size]
+    result[size+1:dim,size+1:dim]<-(-solve(partList[1])%*%partList[2]%*%result[size+1:dim,size+1:dim]
+    return (result)
+}
 
 #Improved Elementary Wstimator
-improvedEE<-function(S,lambda,p,thr_func=hardThreshold,core_num=1){
+splitEE<-function(S,lambda,p,thr_func=hardThreshold,core_num=1){
     #Initialization
     Omega<-zeros(p)
     #Thresholding on covariance matrix
@@ -34,6 +44,7 @@ improvedEE<-function(S,lambda,p,thr_func=hardThreshold,core_num=1){
     var_seq<-var_seq[,1]
     S_lambda<-S_lambda[var_seq,]
     S_lambda<-S_lambda[,var_seq]
+    #=============== TODO: Delte this part as we don't need parallel in our function===============
     if(core_num>1){
         #Parallelizing
         each_inv<-function(pairs){
@@ -79,7 +90,7 @@ improvedEE<-function(S,lambda,p,thr_func=hardThreshold,core_num=1){
         tmp<-1
         for(i in 1:(length(csize))){
             Omega[tmp:(csize[i]+tmp-1),tmp:(csize[i]+tmp-1)]<-
-                +solve(S_lambda[tmp:(csize[i]+tmp-1),tmp:(csize[i]+tmp-1)])
+                +splitAndInv(S_lambda[tmp:(csize[i]+tmp-1),tmp:(csize[i]+tmp-1)])
             tmp<-tmp+csize[i]
         }
     }

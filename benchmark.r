@@ -1,5 +1,6 @@
 #Test on imbalanced graph
 source("improved_EE.r")
+source('splitEE.r')
 source('EE.r')
 source('evaluation.r')
 source('blkDiag.r')
@@ -7,14 +8,13 @@ library('glasso')
 library('QUIC')
 library("igraph")
 library("matlab")
-library('clime')
 
 thr<-0.23
-count<-1
+count<-2
 
 
-data<-as.matrix(read.csv('data/balance_1000vars_20blks_2000samples.csv',header=FALSE))
-graph_structure<-as.matrix(read.csv('precision/balance_1000vars_20blks.csv',header=FALSE))
+data<-as.matrix(read.csv('data/balance_3000vars_20blks_3000samples.csv',header=FALSE))
+graph_structure<-as.matrix(read.csv('precision/balance_3000vars_20blks.csv',header=FALSE))
 
 print('finished reading')
 
@@ -29,14 +29,21 @@ rm(data)
 S<-S/max(abs(S))
 
 print('finished normalizing')
-"
-p<-5000
-graph_structure<-as.matrix(read.csv('precision/balance_5000vars_20blks.csv',header=FALSE))
-S<-as.matrix(read.csv('cov/S_5000.csv',header=FALSE))
-print('finished reading')
-"
-print('Improved EE:')
 
+print('Split EE:')
+time<-proc.time()-proc.time()
+for(i in 1:count){
+    ptm<-proc.time()
+    spee_model<-splitEE(S,thr,p)
+    time<-time+(proc.time()-ptm)
+}
+time<-time/count
+print(time)
+spee_model<-spee_model/max(abs(spee_model))
+print(accuracy(graph_structure,spee_model))
+
+
+print('Improved EE:')
 print(system.time(imp_ee_model<-improvedEE(S,thr,p,core_num=1)))
 var_seq<-imp_ee_model[[2]]
 imp_ee_model<-imp_ee_model[[1]]
@@ -58,7 +65,7 @@ print(time)
 ee_model<-ee_model/max(abs(ee_model))
 print(accuracy(graph_structure,ee_model))
 
-
+"
 print('GLASSO:')
 time<-proc.time()-proc.time()
 for(i in 1:count){
@@ -84,3 +91,4 @@ print(time)
 quic_model<-quic_model[[1]]
 quic_model<-quic_model/max(abs(quic_model))
 print(accuracy(graph_structure,quic_model))
+"

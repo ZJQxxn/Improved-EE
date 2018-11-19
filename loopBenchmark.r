@@ -6,17 +6,24 @@ library('glasso')
 library('QUIC')
 library("igraph")
 library("matlab")
-library('clime')
 
-#thr<-0.08
-count<-1
+thr<-0.23
+count<-2
 
-thrList<-c(0.05,0.075,0.1,0.125,0.15,0.175,0.2)
-#thrList<-c(0.2)
+#pList<-c(10000,15000,20000)
+blkList<-c(2,5,10,20,50,100)
 
 
-graph_structure<-as.matrix(read.csv(sprintf('precision/grid_3000vars_20blks.csv'),header=FALSE))
-data<-as.matrix(read.csv(sprintf('data/grid_3000vars_20blks_6000samples.csv'),header=FALSE))
+for (blk in blkList){
+print(sprintf('----------------------------%d blks-----------------',blk))
+
+#samNum<-2*varNum
+#if(varNum>=3000){
+#    samNum<-varNum
+#}
+
+graph_structure<-as.matrix(read.csv(sprintf('precision/balance_3000vars_%dblks.csv',blk),header=FALSE))
+data<-as.matrix(read.csv(sprintf('data/balance_3000vars_%dblks_3000samples.csv',blk),header=FALSE))
 print(sprintf('Finished reading'))
 
 p=length(data[1,]) #Variable number
@@ -30,8 +37,6 @@ rm(data)
 S<-S/max(abs(S))
 print('Finished normalizing')
 
-for (thr in thrList){
-print(sprintf('----------------------------%f thr-----------------',thr))
 
 print('Improved EE:')
 time<-proc.time()-proc.time()
@@ -49,7 +54,7 @@ reorder_graph<-reorder_graph[,var_seq]
 imp_ee_model<-imp_ee_model/max(abs(imp_ee_model))
 print(accuracy(reorder_graph,imp_ee_model))
 
-"
+
 print('EE:')
 time<-proc.time()-proc.time()
 for(i in 1:count){
@@ -89,5 +94,5 @@ print(time)
 quic_model<-quic_model[[1]]
 quic_model<-quic_model/max(abs(quic_model))
 print(accuracy(graph_structure,quic_model))
-"
+
 }
